@@ -4,14 +4,22 @@ const { MongoClient } = require('mongodb');
 const typeDefs = require('./schema/typeDefs');
 const Query = require('./schema/resolvers/Query');
 const User = require('./schema/resolvers/User.resolver');
+const Campground = require('./schema/resolvers/Campground.resolver')
 
 const apolloServer = new ApolloServer({
   typeDefs,
   resolvers: {
     Query,
     User,
+    Campground,
+    BaseFields: {
+      __resolveType(tag, context, info) {
+        /** Added BaseFields i/f in resolvers to suppress the following console error -
+         * Type "BaseFields" is missing a "__resolveType" resolver. Pass false into "resolverValidationOptions.requireResolversForResolveType" to disable this warning. */
+      }
+    }
   },
-  context: async ({ request }) => {
+  context: async (request) => {
     let db;
 
     try {
@@ -31,7 +39,6 @@ const apolloServer = new ApolloServer({
 
     return {
       request,
-      setupCompleted: false,
       db,
     };
   },
