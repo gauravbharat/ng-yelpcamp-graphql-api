@@ -2,18 +2,17 @@ const { gql } = require('apollo-server');
 
 module.exports = gql`
   type Query {
+    campgrounds(query: String, pagination: PaginationParams): [Campground]!
+    campground(_id: String!): Campground
+    campRatings(_id: String!): [Rating]! # total ratings on a campground
+
+   # Requires authentication 
     me: User!
     users(query: String, pagination: PaginationParams): [User]!
-    campgrounds(query: String, pagination: PaginationParams): [Campground]!
-
     user(_id: String!): User
-    campground(_id: String!): Campground
     comments(authorId:String!): [Comment]!
-    campRatings(_id: String!): [Rating]! # total ratings on a campground
     userRatings(_id: String!): [Rating]! # total ratings given by a user to campgrounds
     userCampRating(campgroundId: String!, userId: String!): Rating # rating given by a user on a campground
-
-    # notifications: [Notification!]!
 
     # Static data
     amenities: [Amenities!]!
@@ -40,30 +39,30 @@ module.exports = gql`
     firstName: String!
     lastName: String!
     avatar: String!
-    isAdmin: Boolean!
-    hideStatsDashboard: Boolean!
+    isAdmin: Boolean
+    hideStatsDashboard: Boolean
     followers: [User]!
     notifications: [Notification]!
     createdAt: String!
     updatedAt: String!
-    enableNotifications: enableNotificationsFields
-    enableNotificationEmails: enableNotificationsEmailFields
+    enableNotifications: EnableNotificationsFields
+    enableNotificationEmails: EnableNotificationsEmailFields
   }
 
-  interface baseNotificationFields {
+  interface BaseNotificationFields {
     newCampground: Boolean!
     newComment: Boolean!
     newFollower: Boolean
   }
 
-  type enableNotificationsFields implements baseNotificationFields {
+  type EnableNotificationsFields implements BaseNotificationFields {
     newCampground: Boolean!
     newComment: Boolean!
     newFollower: Boolean!
     newCommentLike: Boolean!
   }
 
-  type enableNotificationsEmailFields implements baseNotificationFields {
+  type EnableNotificationsEmailFields implements BaseNotificationFields {
     newCampground: Boolean!
     newComment: Boolean!
     newFollower: Boolean!
@@ -112,10 +111,10 @@ module.exports = gql`
     rating: Float #this is a calculated average of multiple values from Rating table for this camp
     createdAt: String!
     updatedAt: String!
-    fitnessLevel: fitnessLevelField
-    hikingLevel: hikingLevelField
-    trekTechnicalGrade: trekLevelField
-    bestSeasons: bestSeasonsField
+    fitnessLevel: FitnessLevelField
+    hikingLevel: HikingLevelField
+    trekTechnicalGrade: TrekLevelField
+    bestSeasons: BestSeasonsField
   }
 
   enum CampgroundSortByInput {
@@ -133,6 +132,39 @@ module.exports = gql`
     updatedAt_DESC
   }
 
+  interface DifficultyLevelFields {
+    level: Int!
+    levelName: String!
+    levelDesc: String!
+  }
+
+  type FitnessLevelField implements DifficultyLevelFields {
+    level: Int!
+    levelName: String!
+    levelDesc: String!
+  }
+
+  type HikingLevelField implements DifficultyLevelFields {
+    level: Int!
+    levelName: String!
+    levelDesc: String!
+  }
+
+  type TrekLevelField implements DifficultyLevelFields {
+    level: Int!
+    levelName: String!
+    levelDesc: String!
+  }
+  
+  type BestSeasonsField {
+    vasanta: Boolean!
+    grishma: Boolean!
+    varsha: Boolean!
+    sharat: Boolean!
+    hemant: Boolean!
+    shishira: Boolean!
+  }
+
   type Rating implements BaseFields {
     _id: ID!
     rating: Float!
@@ -148,48 +180,26 @@ module.exports = gql`
     updatedAt: String!
     isRead: Boolean!
     notificationType: Int!
-    follower: followerTypeField
+    notificationTypeDesc: NotificationTypeDesc!
+    follower: FollowerTypeField
     isCommentLike: Boolean!
     campgroundId: Campground
     commentId: Comment
     userId: User
   }
 
-  type followerTypeField {
+  enum NotificationTypeDesc {
+    NEW_CAMPGROUND
+    NEW_COMMENT
+    NEW_ADMIN_REQUEST
+    NEW_FOLLOWER
+    NEW_LIKE_FOR_COMMENT
+  }
+
+  type FollowerTypeField {
     id: User
     followingUserId: User
   }
 
-  interface difficultyLevelFields {
-    level: Int!
-    levelName: String!
-    levelDesc: String!
-  }
-
-  type fitnessLevelField implements difficultyLevelFields {
-    level: Int!
-    levelName: String!
-    levelDesc: String!
-  }
-
-  type hikingLevelField implements difficultyLevelFields {
-    level: Int!
-    levelName: String!
-    levelDesc: String!
-  }
-
-  type trekLevelField implements difficultyLevelFields {
-    level: Int!
-    levelName: String!
-    levelDesc: String!
-  }
   
-  type bestSeasonsField {
-    vasanta: Boolean!
-    grishma: Boolean!
-    varsha: Boolean!
-    sharat: Boolean!
-    hemant: Boolean!
-    shishira: Boolean!
-  }
 `;

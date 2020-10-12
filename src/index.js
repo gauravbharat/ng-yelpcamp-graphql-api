@@ -24,12 +24,12 @@ const apolloServer = new ApolloServer({
          * Type "BaseFields" is missing a "__resolveType" resolver. Pass false into "resolverValidationOptions.requireResolversForResolveType" to disable this warning. */
       }
     },
-    difficultyLevelFields: {
+    DifficultyLevelFields: {
       __resolveType(tag, context, info) {
         // To disable console warning
       }
     },
-    baseNotificationFields: {
+    BaseNotificationFields: {
       __resolveType(tag, context, info) {
         // To disable console warning
       }

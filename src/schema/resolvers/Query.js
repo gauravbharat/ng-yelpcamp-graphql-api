@@ -1,7 +1,7 @@
 
 const { checkIDValidity, escapeRegex } = require('../../utils/validators.util')
 const { objectName, sortOrder } = require('../../utils/constants.util');
-const { getUserId, generateToken } = require('../../utils/security.util');
+const { getUserId } = require('../../utils/security.util');
 
 module.exports = {
   async me(parent, args, {request, db}, info) {
@@ -9,6 +9,9 @@ module.exports = {
     return await db.collection('users').findOne({_id: userId});
   },
   async user(parent, args, context, info) {
+    // Require user to be authenticated / logged-in
+    const loggedUser = getUserId(context.request);
+
     if(!args._id) {
       throw new Error('User ID is required')
     }
@@ -20,6 +23,9 @@ module.exports = {
     return await context.db.collection('users').findOne(opArgs);
   },
   async users(parent, args, context, info) {
+   // Require user to be authenticated / logged-in
+   const loggedUser = getUserId(context.request);
+
     let searchObject = context.db.collection('users').find();
     if(args.pagination) {
       if(args.pagination.skip) { searchObject = searchObject.skip(args.pagination.skip) }
@@ -74,6 +80,9 @@ module.exports = {
     return await searchObject.toArray();
   },
   async comments(parent, args, context, info) {
+   // Require user to be authenticated / logged-in
+   const loggedUser = getUserId(context.request);
+
     if(!args.authorId) {
       throw new Error('Comment author is required')
     }
@@ -94,6 +103,9 @@ module.exports = {
     return context.db.collection('ratings').find(opArgs).toArray();
   },
   async userRatings(parent, args, context, info) {
+    // Require user to be authenticated / logged-in
+    const loggedUser = getUserId(context.request);
+
     if(!args._id) {
       throw new Error('User ID is required')
     }
@@ -106,6 +118,9 @@ module.exports = {
     return context.db.collection('ratings').find(opArgs).toArray();
   },
   async userCampRating(parent, args, context, info) {
+    // Require user to be authenticated / logged-in
+    const loggedUser = getUserId(context.request);
+    
     if(!args.campgroundId) {
       throw new Error('Campground ID is required')
     }

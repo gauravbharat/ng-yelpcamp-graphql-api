@@ -1,6 +1,10 @@
 const mongodb = require('mongodb')
+const { notificationTypes } = require('../../utils/constants.util');
 
 module.exports = {
+  notificationTypeDesc(parent, args, context, info) {
+    return notificationTypes.get(parent.notificationType);
+  },
   campgroundId(parent, args, context, info) {
     if(!parent.campgroundId) return;
     return context.db.collection('campgrounds').findOne({ _id: mongodb.ObjectID(parent.campgroundId) });
