@@ -40,7 +40,7 @@ module.exports = {
       }
     }).toArray();
   },
-  /** Restrict fields to authenticated user AND to his own records */
+  /** Restrict fields to authenticated user AND to user's own records */
   enableNotifications(parent, args, context, info) {
     if(!parent.enableNotifications) return;
     const loggedUserId = getUserId(context.request);
