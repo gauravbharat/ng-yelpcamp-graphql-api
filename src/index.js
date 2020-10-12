@@ -3,6 +3,7 @@ const { MongoClient } = require('mongodb');
 
 const typeDefs = require('./schema/typeDefs');
 const Query = require('./schema/resolvers/Query');
+const Mutation = require('./schema/resolvers/Mutation');
 const User = require('./schema/resolvers/User.resolver');
 const Campground = require('./schema/resolvers/Campground.resolver');
 const Comment = require('./schema/resolvers/Comment.resolver');
@@ -13,6 +14,7 @@ const apolloServer = new ApolloServer({
   typeDefs,
   resolvers: {
     Query,
+    Mutation,
     User,
     Campground,
     Comment,

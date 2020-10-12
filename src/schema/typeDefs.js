@@ -19,6 +19,21 @@ module.exports = gql`
     countries: [Countries!]!
   }
 
+  type Mutation {
+    login(credentials: LoginUserInput!): AuthPayload!
+  }
+
+  input LoginUserInput {
+    username: String
+    email: String
+    password: String!
+  }
+
+  type AuthPayload {
+    token: String!
+    user: User!
+  }
+
   input PaginationParams {
     skip: Int
     limit: Int
@@ -47,6 +62,8 @@ module.exports = gql`
     updatedAt: String!
     enableNotifications: EnableNotificationsFields
     enableNotificationEmails: EnableNotificationsEmailFields
+    resetPasswordToken: String
+    resetPasswordExpires: String
   }
 
   interface BaseNotificationFields {
