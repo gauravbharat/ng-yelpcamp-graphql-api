@@ -22,5 +22,12 @@ module.exports = {
         $in: parent.comments
       }
     }).toArray();
+  },
+  author(parent, args, context, info) {
+    /** Return author.id as User type _id, for correct mapping */
+    return {
+      _id: parent.author.id,
+      username: parent.author.username
+    }
   }
 }

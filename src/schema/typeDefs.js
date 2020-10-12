@@ -2,13 +2,22 @@ const { gql } = require('apollo-server');
 
 module.exports = gql`
   type Query {
+    me: User!
     users(query: String, pagination: PaginationParams): [User]!
-    user(_id: String!): User
     campgrounds(query: String, pagination: PaginationParams): [Campground]!
+
+    user(_id: String!): User
     campground(_id: String!): Campground
     comments(authorId:String!): [Comment]!
-    amenities(campgroundId:String): [Amenities]!
-    # rating
+    campRatings(_id: String!): [Rating]! # total ratings on a campground
+    userRatings(_id: String!): [Rating]! # total ratings given by a user to campgrounds
+    userCampRating(campgroundId: String!, userId: String!): Rating # rating given by a user on a campground
+
+    # notifications: [Notification!]!
+
+    # Static data
+    amenities: [Amenities!]!
+    countries: [Countries!]!
   }
 
   input PaginationParams {
@@ -34,8 +43,31 @@ module.exports = gql`
     isAdmin: Boolean!
     hideStatsDashboard: Boolean!
     followers: [User]!
+    notifications: [Notification]!
     createdAt: String!
     updatedAt: String!
+    enableNotifications: enableNotificationsFields
+    enableNotificationEmails: enableNotificationsEmailFields
+  }
+
+  interface baseNotificationFields {
+    newCampground: Boolean!
+    newComment: Boolean!
+    newFollower: Boolean
+  }
+
+  type enableNotificationsFields implements baseNotificationFields {
+    newCampground: Boolean!
+    newComment: Boolean!
+    newFollower: Boolean!
+    newCommentLike: Boolean!
+  }
+
+  type enableNotificationsEmailFields implements baseNotificationFields {
+    newCampground: Boolean!
+    newComment: Boolean!
+    newFollower: Boolean!
+    system: Boolean!
   }
 
   type Comment implements BaseFields {
@@ -80,6 +112,10 @@ module.exports = gql`
     rating: Float #this is a calculated average of multiple values from Rating table for this camp
     createdAt: String!
     updatedAt: String!
+    fitnessLevel: fitnessLevelField
+    hikingLevel: hikingLevelField
+    trekTechnicalGrade: trekLevelField
+    bestSeasons: bestSeasonsField
   }
 
   enum CampgroundSortByInput {
@@ -112,16 +148,48 @@ module.exports = gql`
     updatedAt: String!
     isRead: Boolean!
     notificationType: Int!
-    follower: followerType
+    follower: followerTypeField
     isCommentLike: Boolean!
     campgroundId: Campground
     commentId: Comment
     userId: User
   }
 
-  type followerType {
-    id: User!
-    followingUserId: User!
+  type followerTypeField {
+    id: User
+    followingUserId: User
+  }
+
+  interface difficultyLevelFields {
+    level: Int!
+    levelName: String!
+    levelDesc: String!
+  }
+
+  type fitnessLevelField implements difficultyLevelFields {
+    level: Int!
+    levelName: String!
+    levelDesc: String!
+  }
+
+  type hikingLevelField implements difficultyLevelFields {
+    level: Int!
+    levelName: String!
+    levelDesc: String!
+  }
+
+  type trekLevelField implements difficultyLevelFields {
+    level: Int!
+    levelName: String!
+    levelDesc: String!
   }
   
+  type bestSeasonsField {
+    vasanta: Boolean!
+    grishma: Boolean!
+    varsha: Boolean!
+    sharat: Boolean!
+    hemant: Boolean!
+    shishira: Boolean!
+  }
 `;

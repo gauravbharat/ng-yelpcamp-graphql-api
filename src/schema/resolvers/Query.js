@@ -1,8 +1,13 @@
-const mongodb = require('mongodb');
+
 const { checkIDValidity, escapeRegex } = require('../../utils/validators.util')
 const { objectName, sortOrder } = require('../../utils/constants.util');
+const { getUserId, generateToken } = require('../../utils/security.util');
 
 module.exports = {
+  async me(parent, args, {request, db}, info) {
+    const userId = getUserId(request);
+    return await db.collection('users').findOne({_id: userId});
+  },
   async user(parent, args, context, info) {
     if(!args._id) {
       throw new Error('User ID is required')
@@ -68,9 +73,6 @@ module.exports = {
 
     return await searchObject.toArray();
   },
-  async amenities(parent, args, context, info) {
-    return await context.db.collection('amenities').find().toArray();
-  },
   async comments(parent, args, context, info) {
     if(!args.authorId) {
       throw new Error('Comment author is required')
@@ -78,5 +80,55 @@ module.exports = {
 
     args.authorId = checkIDValidity(args.authorId, objectName.COMMENT)
     return await context.db.collection('comments').find({'author.id': args.authorId}).toArray();
-  }
+  },
+  async campRatings(parent, args, context, info) {
+    if(!args._id) {
+      throw new Error('Campground ID is required')
+    }
+
+    // Search based on the campgroundId passed
+    const opArgs = {
+      campgroundId: checkIDValidity(args._id, objectName.CAMPGROUND)
+    }
+
+    return context.db.collection('ratings').find(opArgs).toArray();
+  },
+  async userRatings(parent, args, context, info) {
+    if(!args._id) {
+      throw new Error('User ID is required')
+    }
+
+    // Search based on the campgroundId passed
+    const opArgs = {
+      ['author.id']: checkIDValidity(args._id, objectName.USER)
+    }
+
+    return context.db.collection('ratings').find(opArgs).toArray();
+  },
+  async userCampRating(parent, args, context, info) {
+    if(!args.campgroundId) {
+      throw new Error('Campground ID is required')
+    }
+
+    if(!args.userId) {
+      throw new Error('User ID is required')
+    }
+
+    // Search based on the campgroundId passed
+    const opArgs = {
+      campgroundId: checkIDValidity(args.campgroundId, objectName.CAMPGROUND),
+      ['author.id']: checkIDValidity(args.userId, objectName.USER)
+    }
+
+    return context.db.collection('ratings').findOne(opArgs);
+  },
+  // async notifications(parent, args, context, info) {
+  //   return await context.db.collection('notifications').find().toArray();
+  // },
+  async amenities(parent, args, context, info) {
+    return await context.db.collection('amenities').find().toArray();
+  },
+  async countries(parent, args, context, info) {
+    return await context.db.collection('countries').find().toArray();
+  },
 };
