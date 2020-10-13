@@ -12,16 +12,23 @@ module.exports = {
       }
     }).toArray();
   },
-  comments(parent, args, context, info) {
+  async comments(parent, args, context, info) {
     if(parent.comments.length === 0) {
       return [];
     }
 
-    return context.db.collection('comments').find({
+    const comments = await context.db.collection('comments').find({
       _id: {
         $in: parent.comments
       }
     }).toArray();
+
+    return await comments.map(comment => {
+      return {
+        ...comment,
+        updatedAt: comment.updatedAt.toISOString()
+      }
+    });
   },
   author(parent, args, context, info) {
     /** Return author.id as User type _id, for correct mapping */

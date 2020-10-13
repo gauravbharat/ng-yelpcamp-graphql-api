@@ -28,8 +28,8 @@ module.exports = {
 
     let searchObject = context.db.collection('users').find();
     if(args.pagination) {
-      if(args.pagination.skip) { searchObject = searchObject.skip(args.pagination.skip) }
-      if(args.pagination.limit) { searchObject = searchObject.limit(args.pagination.limit) }
+      args.pagination.skip && searchObject.skip(args.pagination.skip)
+      args.pagination.limit && searchObject.limit(args.pagination.limit)
     }
 
     // console.log(context.request.req.headers.authorization);
@@ -41,11 +41,37 @@ module.exports = {
     }
 
     // Search based on the campgroundId passed
+    const campgroundId = checkIDValidity(args._id, objectName.CAMPGROUND)
     const opArgs = {
-      _id: checkIDValidity(args._id, objectName.CAMPGROUND)
+      _id: campgroundId
     }
 
-    return context.db.collection('campgrounds').findOne(opArgs);
+    const campground = await context.db.collection('campgrounds').findOne(opArgs);
+    if (campground) {
+      let ratingData;
+
+      if (campground.rating > 0) {
+        const ratings = await context.db.collection('ratings').find({campgroundId}).toArray();
+
+        if (ratings.length > 0) {
+          ratingData = await {
+            ratingsCount: ratings.length,
+            ratedBy: ratings.map((rating) => rating.author.username),
+          };
+        }
+      }
+
+      return await {
+        campground: {
+          ...campground,
+          updatedAt: campground.updatedAt.toISOString(),
+        },
+        ratingData
+      }
+
+    } else {
+      return
+    }  
   },
   async campgrounds(parent, args, context, info) {
     let opArgs = {};
@@ -77,7 +103,37 @@ module.exports = {
       args.pagination.limit && searchObject.limit(args.pagination.limit);
     }
 
-    return await searchObject.toArray();
+    const campgrounds = await searchObject.toArray();
+    let maxCampgrounds = await context.db.collection('campgrounds').countDocuments();
+    const campgroundsCount = maxCampgrounds || 0;
+
+    /** Return the actual filtered records count, and NOT the total campgrounds count, when in query mode */
+    if(args.query) { maxCampgrounds = campgrounds.length || 0 }
+
+    return {
+      campgrounds,
+      maxCampgrounds,
+      campgroundsCount,
+      usersCount: await context.db.collection('users').countDocuments() || 0,
+      contributorsCount: await (await context.db.collection('campgrounds').distinct('author.id')).length || 0
+    }
+  },
+  async allCampgrounds(parent, args, context, info) {
+    // Check that the user is authenticated to fetch data
+
+    // No return record limit restriction in this demo version!
+    const campgrounds = await context.db.collection('campgrounds').find().toArray();
+    return await campgrounds.map(campground => {
+      return {
+        _id: campground._id,
+        name: campground.name,
+        rating: campground.rating || 0,
+        price: campground.price || 0,
+        countryCode: campground.country.Two_Letter_Country_Code || 'NA',
+        continentName: campground.country.Continent_Name || 'NA'
+      }
+    })
+
   },
   async comments(parent, args, context, info) {
    // Require user to be authenticated / logged-in
@@ -145,5 +201,5 @@ module.exports = {
   },
   async countries(parent, args, context, info) {
     return await context.db.collection('countries').find().toArray();
-  },
+  }
 };

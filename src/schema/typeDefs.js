@@ -2,17 +2,18 @@ const { gql } = require('apollo-server');
 
 module.exports = gql`
   type Query {
-    campgrounds(query: String, pagination: PaginationParams): [Campground]!
-    campground(_id: String!): Campground
-    campRatings(_id: String!): [Rating]! # total ratings on a campground
+    campgrounds(query: String, pagination: PaginationParams): CampgroundsPayload!
+    allCampgrounds: [CampgroundListPayload]!
+    campground(_id: ID!): CampgroundDataPayload
+    campRatings(_id: ID!): [Rating]! # total ratings on a campground
 
    # Requires authentication 
     me: User!
     users(query: String, pagination: PaginationParams): [User]!
-    user(_id: String!): User
-    comments(authorId:String!): [Comment]!
-    userRatings(_id: String!): [Rating]! # total ratings given by a user to campgrounds
-    userCampRating(campgroundId: String!, userId: String!): Rating # rating given by a user on a campground
+    user(_id: ID!): User
+    comments(authorId:ID!): [Comment]!
+    userRatings(_id: ID!): [Rating]! # total ratings given by a user to campgrounds
+    userCampRating(campgroundId: ID!, userId: ID!): Rating # rating given by a user on a campground
 
     # Static data
     amenities: [Amenities!]!
@@ -32,6 +33,34 @@ module.exports = gql`
   type AuthPayload {
     token: String!
     user: User!
+  }
+
+  type CampgroundsPayload {
+    campgrounds: [Campground]!
+    maxCampgrounds: Int!
+    campgroundsCount: Int!
+    usersCount: Int!
+    contributorsCount: Int!
+  }
+
+  type RatingCountUsers {
+    ratingsCount: Int
+    ratedBy: [String]
+  }
+
+  type CampgroundDataPayload {
+    campground: Campground
+    ratingData: RatingCountUsers
+  }
+
+  # Limited payload
+  type CampgroundListPayload {
+    _id: ID!
+    name: String!
+    rating: Float
+    price: Float
+    countryCode: String
+    continentName: String
   }
 
   input PaginationParams {
@@ -115,7 +144,7 @@ module.exports = gql`
   type Campground implements BaseFields {
     _id: ID!
     name: String!
-    price: Int
+    price: Float
     image: String!
     location: String
     latitude: Int

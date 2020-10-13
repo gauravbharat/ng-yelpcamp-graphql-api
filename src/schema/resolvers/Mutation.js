@@ -5,8 +5,8 @@ module.exports = {
     const {username, email, password} = args.credentials;
     let opArgs;
 
-    if(username.trim()) { opArgs = { username: username.trim() } }
-    if(email.trim()) { opArgs = { email: email.trim() } }
+    if(username && username.trim()) { opArgs = { username: username.trim() } }
+    if(email && email.trim()) { opArgs = { email: email.trim() } }
 
     if(!opArgs || !password) {
       throw new Error('Unable to login!')
@@ -28,6 +28,6 @@ module.exports = {
       token: generateToken(user._id),
       user
     }
+  },
 
-  }
 }
