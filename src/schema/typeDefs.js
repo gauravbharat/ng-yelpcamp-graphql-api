@@ -2,22 +2,23 @@ const { gql } = require('apollo-server');
 
 module.exports = gql`
   type Query {
-    campgrounds(query: String, pagination: PaginationParams): CampgroundsPayload!
+    campgrounds(
+      query: String
+      pagination: PaginationParams
+    ): CampgroundsPayload!
     allCampgrounds: [CampgroundListPayload]!
-    campground(_id: ID!): CampgroundDataPayload
+    campground(_id: ID!, isEditMode: Boolean = false): CampgroundDataPayload
     campRatings(_id: ID!): [Rating]! # total ratings on a campground
-
-   # Requires authentication 
+    # Requires authentication
     me: User!
     users(query: String, pagination: PaginationParams): [User]!
     user(_id: ID!): User
-    comments(authorId:ID!): [Comment]!
+    comments(authorId: ID!): [Comment]!
     userRatings(_id: ID!): [Rating]! # total ratings given by a user to campgrounds
     userCampRating(campgroundId: ID!, userId: ID!): Rating # rating given by a user on a campground
-
     # Static data
-    amenities: [Amenities!]!
-    countries: [Countries!]!
+    campLevelsData: Hike!
+    campStaticData: CreateCampgroundStaticData!
   }
 
   type Mutation {
@@ -201,7 +202,7 @@ module.exports = gql`
     levelName: String!
     levelDesc: String!
   }
-  
+
   type BestSeasonsField {
     vasanta: Boolean!
     grishma: Boolean!
@@ -209,6 +210,28 @@ module.exports = gql`
     sharat: Boolean!
     hemant: Boolean!
     shishira: Boolean!
+  }
+
+  type Season {
+    id: Int!
+    indianName: String!
+    englishName: String!
+  }
+
+  type Hike {
+    seasons: [Season!]!
+    hikingLevels: [HikingLevelField!]!
+    trekTechnicalGrades: [TrekLevelField!]!
+    fitnessLevels: [FitnessLevelField!]!
+  }
+
+  type CreateCampgroundStaticData {
+    countriesList: [Countries!]!
+    amenitiesList: [Amenities!]!
+    seasons: [Season!]!
+    hikingLevels: [HikingLevelField!]!
+    trekTechnicalGrades: [TrekLevelField!]!
+    fitnessLevels: [FitnessLevelField!]!
   }
 
   type Rating implements BaseFields {
@@ -246,6 +269,4 @@ module.exports = gql`
     id: User
     followingUserId: User
   }
-
-  
 `;
