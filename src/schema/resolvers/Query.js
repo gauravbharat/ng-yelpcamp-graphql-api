@@ -48,6 +48,11 @@ module.exports = {
     const campground = await context.db
       .collection('campgrounds')
       .findOne(opArgs);
+
+    if (!campground) {
+      throw new Error('Error fetching campground!');
+    }
+
     if (campground) {
       let ratingData;
 
@@ -108,6 +113,11 @@ module.exports = {
     }
 
     const campgrounds = await searchObject.toArray();
+
+    if (!campgrounds) {
+      throw new Error('Error fetching campgrounds!');
+    }
+
     let maxCampgrounds = await context.db
       .collection('campgrounds')
       .countDocuments();
@@ -137,6 +147,11 @@ module.exports = {
       .collection('campgrounds')
       .find()
       .toArray();
+
+    if (!campgrounds) {
+      throw new Error('Error fetching all campgrounds!');
+    }
+
     return await campgrounds.map((campground) => {
       return {
         _id: campground._id,
@@ -213,7 +228,17 @@ module.exports = {
   //   return await context.db.collection('notifications').find().toArray();
   // },
   async campLevelsData(parent, args, context, info) {
+    // console.log(
+    //   'context.request.req.headers inside campLevelsData',
+    //   context.request.req.headers
+    // );
+
     const hikesData = await context.db.collection('hikes').find().toArray();
+
+    if (!hikesData) {
+      throw new Error('Error fetching Camp levels data!');
+    }
+
     return {
       seasons: hikesData[0].seasons,
       hikingLevels: hikesData[0].hikingLevels,

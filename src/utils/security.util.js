@@ -3,11 +3,11 @@ const bcryptjs = require('bcryptjs');
 const mongodb = require('mongodb');
 
 exports.generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECTRE, { expiresIn: '7 days' });
+  return jwt.sign({ userId }, process.env.JWT_SECTRE, { expiresIn: '1h' });
 };
 
 exports.getUserId = (request, requireAuth = true) => {
-  // For Queries or Mutations, take from req.headers. 
+  // For Queries or Mutations, take from req.headers.
   // For Subscriptions, from connection.context
   const header = request.req
     ? request.req.headers.authorization
@@ -16,8 +16,8 @@ exports.getUserId = (request, requireAuth = true) => {
   if (header) {
     const token = header.replace('Bearer ', '');
     const decoded = jwt.verify(token, process.env.JWT_SECTRE);
-    if(!decoded || !decoded.userId) {
-      throw new Error('Authentication required')
+    if (!decoded || !decoded.userId) {
+      throw new Error('Authentication required');
     }
 
     return mongodb.ObjectID(decoded.userId);
