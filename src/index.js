@@ -9,6 +9,7 @@ const Campground = require('./schema/resolvers/Campground.resolver');
 const Comment = require('./schema/resolvers/Comment.resolver');
 const Rating = require('./schema/resolvers/Rating.resolver');
 const Notification = require('./schema/resolvers/Notification.resolver');
+const AllUsersDisplayList = require('./schema/resolvers/AllUsersDisplayList.resolver');
 
 const apolloServer = new ApolloServer({
   typeDefs,
@@ -20,22 +21,23 @@ const apolloServer = new ApolloServer({
     Comment,
     Rating,
     Notification,
+    AllUsersDisplayList,
     BaseFields: {
       __resolveType(tag, context, info) {
         /** Added BaseFields i/f in resolvers to suppress the following console error -
          * Type "BaseFields" is missing a "__resolveType" resolver. Pass false into "resolverValidationOptions.requireResolversForResolveType" to disable this warning. */
-      }
+      },
     },
     DifficultyLevelFields: {
       __resolveType(tag, context, info) {
         // To disable console warning
-      }
+      },
     },
     BaseNotificationFields: {
       __resolveType(tag, context, info) {
         // To disable console warning
-      }
-    }
+      },
+    },
   },
   context: async (request) => {
     let db;
@@ -52,7 +54,10 @@ const apolloServer = new ApolloServer({
 
       db = dbClient.db('angular-yelpcamp');
     } catch (error) {
-      console.log('Error connecting to database via graphql context', error.message);
+      console.log(
+        'Error connecting to database via graphql context',
+        error.message
+      );
     }
 
     return {

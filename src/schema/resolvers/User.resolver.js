@@ -9,13 +9,6 @@ module.exports = {
       return [];
     }
 
-    // // Require user to be authenticated / logged-in
-    // const loggedUserId = getUserId(context.request);
-    // // Only return for the authenticated user, AND his own data
-    // if(String(loggedUserId) !== String(parent._id)) {
-    //   return []
-    // }
-
     return context.db
       .collection('users')
       .find({
@@ -30,13 +23,6 @@ module.exports = {
       return [];
     }
 
-    // // Require user to be authenticated / logged-in
-    // const loggedUserId = getUserId(context.request);
-    // // Only return for the authenticated user, AND his own data
-    // if(String(loggedUserId) !== String(parent._id)) {
-    //   return []
-    // }
-
     return context.db
       .collection('notifications')
       .find({
@@ -46,6 +32,12 @@ module.exports = {
       })
       .toArray();
   },
+  // createdAt(parent, args, context, info) {
+  //   return parent.createdAt.toISOString();
+  // },
+  // updatedAt(parent, args, context, info) {
+  //   return parent.updatedAt.toISOString();
+  // },
   //   /** Restrict fields to authenticated user AND to user's own records */
   //   enableNotifications(parent, args, context, info) {
   //     if(!parent.enableNotifications) return;

@@ -3,13 +3,26 @@ const { objectName, sortOrder } = require('../../utils/constants.util');
 const { getUserId } = require('../../utils/security.util');
 
 module.exports = {
-  async me(parent, args, { request, db }, info) {
+  async userActivity(parent, args, { request, db }, info) {
+    // Authentication required
     const userId = getUserId(request);
-    return await db.collection('users').findOne({ _id: userId });
+    const userCampgrounds =
+      (await db
+        .collection('campgrounds')
+        .find({ 'author.id': userId })
+        .sort([['updatedAt', -1]])
+        .toArray()) || [];
+
+    const userComments = [];
+
+    return {
+      userCampgrounds,
+      userComments,
+    };
   },
-  async user(parent, args, context, info) {
-    // Require user to be authenticated / logged-in
-    const loggedUser = getUserId(context.request);
+  async coUser(parent, args, { request, db }, info) {
+    // Authentication required
+    const userLoggedInId = getUserId(request);
 
     if (!args._id) {
       throw new Error('User ID is required');
@@ -19,20 +32,54 @@ module.exports = {
       _id: checkIDValidity(args._id, objectName.USER),
     };
 
-    return await context.db.collection('users').findOne(opArgs);
-  },
-  async users(parent, args, context, info) {
-    // Require user to be authenticated / logged-in
-    const loggedUser = getUserId(context.request);
+    const user = await db.collection('users').findOne(opArgs);
 
-    let searchObject = context.db.collection('users').find();
-    if (args.pagination) {
-      args.pagination.skip && searchObject.skip(args.pagination.skip);
-      args.pagination.limit && searchObject.limit(args.pagination.limit);
+    if (!user) {
+      throw new Error('Co-User not found!');
     }
 
-    // console.log(context.request.req.headers.authorization);
-    return await searchObject.toArray();
+    const userCampgrounds = await db
+      .collection('campgrounds')
+      .find({ 'author.id': opArgs._id })
+      .sort([['updatedAt', -1]])
+      .toArray();
+
+    const mappedCampgrounds = await userCampgrounds.map((record) => {
+      return {
+        campgroundId: record._id,
+        campgroundName: record.name,
+      };
+    });
+
+    return {
+      coUserData: {
+        coUserId: user._id,
+        email: user.email,
+        username: user.username,
+        firstname: user.firstName,
+        lastname: user.lastName,
+        avatar: user.avatar,
+        followers: user.followers,
+      },
+      userCampgrounds: mappedCampgrounds,
+    };
+  },
+  async allUsers(parent, args, { request, db }, info) {
+    // Require user to be authenticated / logged-in
+    const loggedUser = getUserId(request);
+
+    let users = await db.collection('users').find().toArray();
+    return await users.map((user) => {
+      return {
+        _id: user._id,
+        username: user.username,
+        name: `${user.firstName} ${user.lastName}`,
+        email: user.email,
+        avatar: user.avatar,
+        createdAt: user.createdAt.toISOString(),
+        totalFollowers: user.followers.length | 0,
+      };
+    });
   },
   async campground(parent, args, context, info) {
     if (!args._id) {
@@ -163,20 +210,20 @@ module.exports = {
       };
     });
   },
-  async comments(parent, args, context, info) {
-    // Require user to be authenticated / logged-in
-    const loggedUser = getUserId(context.request);
+  // async comments(parent, args, context, info) {
+  //   // Require user to be authenticated / logged-in
+  //   const loggedUser = getUserId(context.request);
 
-    if (!args.authorId) {
-      throw new Error('Comment author is required');
-    }
+  //   if (!args.authorId) {
+  //     throw new Error('Comment author is required');
+  //   }
 
-    args.authorId = checkIDValidity(args.authorId, objectName.COMMENT);
-    return await context.db
-      .collection('comments')
-      .find({ 'author.id': args.authorId })
-      .toArray();
-  },
+  //   args.authorId = checkIDValidity(args.authorId, objectName.COMMENT);
+  //   return await context.db
+  //     .collection('comments')
+  //     .find({ 'author.id': args.authorId })
+  //     .toArray();
+  // },
   async campRatings(parent, args, context, info) {
     if (!args._id) {
       throw new Error('Campground ID is required');
@@ -228,11 +275,6 @@ module.exports = {
   //   return await context.db.collection('notifications').find().toArray();
   // },
   async campLevelsData(parent, args, context, info) {
-    // console.log(
-    //   'context.request.req.headers inside campLevelsData',
-    //   context.request.req.headers
-    // );
-
     const hikesData = await context.db.collection('hikes').find().toArray();
 
     if (!hikesData) {

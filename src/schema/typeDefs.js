@@ -10,10 +10,11 @@ module.exports = gql`
     campground(_id: ID!, isEditMode: Boolean = false): CampgroundDataPayload
     campRatings(_id: ID!): [Rating]! # total ratings on a campground
     # Requires authentication
-    me: User!
-    users(query: String, pagination: PaginationParams): [User]!
-    user(_id: ID!): User
-    comments(authorId: ID!): [Comment]!
+    userActivity: UserActivityPayload!
+    # me: User!
+    allUsers: [AllUsersDisplayList!]!
+    coUser(_id: ID!): CoUserDataPayload
+    # comments(authorId: ID!): [Comment]!
     userRatings(_id: ID!): [Rating]! # total ratings given by a user to campgrounds
     userCampRating(campgroundId: ID!, userId: ID!): Rating # rating given by a user on a campground
     # Static data
@@ -23,6 +24,12 @@ module.exports = gql`
 
   type Mutation {
     login(credentials: LoginUserInput!): AuthPayload!
+    toggleFollowUser(userToFollowId: String!, follow: Boolean!): String!
+    updateUserAvatar(avatar: String!): String!
+    updateUserPassword(oldPassword: String!, newPassword: String!): String!
+
+    updateNotification(notificationIdArr: [ID!]!, isSetRead: Boolean!): String
+    deleteNotification(notificationIdArr: [ID!]!): String
   }
 
   input LoginUserInput {
@@ -32,8 +39,9 @@ module.exports = gql`
   }
 
   type AuthPayload {
-    token: String!
     user: User!
+    token: String!
+    expiresIn: Int!
   }
 
   type CampgroundsPayload {
@@ -54,6 +62,31 @@ module.exports = gql`
     ratingData: RatingCountUsers
   }
 
+  type UserActivityPayload {
+    userCampgrounds: [Campground]!
+    userComments: [Comment]!
+  }
+
+  type CoUserDataPayload {
+    coUserData: CoUser
+    userCampgrounds: [CoUserCampgrounds]!
+  }
+
+  type CoUser {
+    coUserId: ID!
+    email: String!
+    username: String!
+    firstname: String!
+    lastname: String!
+    avatar: String!
+    followers: [String]!
+  }
+
+  type CoUserCampgrounds {
+    campgroundId: String!
+    campgroundName: String!
+  }
+
   # Limited payload
   type CampgroundListPayload {
     _id: ID!
@@ -62,6 +95,19 @@ module.exports = gql`
     price: Float
     countryCode: String
     continentName: String
+  }
+
+  type AllUsersDisplayList {
+    _id: ID!
+    username: String!
+    name: String!
+    email: String!
+    avatar: String!
+    createdAt: String!
+    totalCampgrounds: Int!
+    totalComments: Int!
+    totalFollowers: Int!
+    totalRatings: Int!
   }
 
   input PaginationParams {
@@ -86,14 +132,14 @@ module.exports = gql`
     avatar: String!
     isAdmin: Boolean
     hideStatsDashboard: Boolean
-    followers: [User]!
-    notifications: [Notification]!
     createdAt: String!
     updatedAt: String!
     enableNotifications: EnableNotificationsFields
     enableNotificationEmails: EnableNotificationsEmailFields
     resetPasswordToken: String
     resetPasswordExpires: String
+    followers: [User]!
+    notifications: [Notification]!
   }
 
   interface BaseNotificationFields {

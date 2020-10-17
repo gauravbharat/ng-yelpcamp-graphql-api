@@ -3,7 +3,9 @@ const bcryptjs = require('bcryptjs');
 const mongodb = require('mongodb');
 
 exports.generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECTRE, { expiresIn: '1h' });
+  return jwt.sign({ userId }, process.env.JWT_SECTRE, {
+    expiresIn: process.env.TOKEN_EXPIRES_IN,
+  });
 };
 
 exports.getUserId = (request, requireAuth = true) => {
