@@ -23,11 +23,18 @@ module.exports = gql`
   }
 
   type Mutation {
+    # User Security
     login(credentials: LoginUserInput!): AuthPayload!
+    register(registrationData: RegisterUserInput!): AuthPayload!
+    createResetToken(email: String!): PasswordResetTokenPayload!
+    verifyResetToken(token: String!): String
+    resetPassword(token: String!, newPassword: String!): String
+    # User Data
     toggleFollowUser(userToFollowId: String!, follow: Boolean!): String!
     updateUserAvatar(avatar: String!): String!
     updateUserPassword(oldPassword: String!, newPassword: String!): String!
-
+    updateUserSettings(userData: UserSettingsUpdateInput!): String
+    # User Notifications
     updateNotification(notificationIdArr: [ID!]!, isSetRead: Boolean!): String
     deleteNotification(notificationIdArr: [ID!]!): String
   }
@@ -38,10 +45,48 @@ module.exports = gql`
     password: String!
   }
 
+  input RegisterUserInput {
+    username: String!
+    email: String!
+    password: String!
+    firstname: String!
+    lastname: String!
+    isAdmin: Boolean!
+    isPublisher: Boolean!
+    isRequestedAdmin: Boolean!
+  }
+
+  input UserSettingsUpdateInput {
+    userId: String
+    firstname: String
+    lastname: String
+    email: String
+    hideStatsDashboard: Boolean
+    enableNotifications: USEnableNotificaitonsInput
+    enableNotificationEmails: USBaseNotificationsInput
+  }
+
+  input USBaseNotificationsInput {
+    newCampground: Boolean
+    newComment: Boolean
+    newFollower: Boolean
+  }
+
+  input USEnableNotificaitonsInput {
+    newCampground: Boolean
+    newComment: Boolean
+    newFollower: Boolean
+    newCommentLike: Boolean
+  }
+
   type AuthPayload {
     user: User!
     token: String!
     expiresIn: Int!
+  }
+
+  type PasswordResetTokenPayload {
+    message: String!
   }
 
   type CampgroundsPayload {
@@ -291,8 +336,6 @@ module.exports = gql`
 
   type Notification implements BaseFields {
     _id: ID!
-    createdAt: String!
-    updatedAt: String!
     isRead: Boolean!
     notificationType: Int!
     notificationTypeDesc: NotificationTypeDesc!
@@ -301,6 +344,8 @@ module.exports = gql`
     campgroundId: Campground
     commentId: Comment
     userId: User
+    createdAt: String!
+    updatedAt: String!
   }
 
   enum NotificationTypeDesc {

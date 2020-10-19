@@ -4,12 +4,12 @@ module.exports = {
   password(parent, args, context, info) {
     return '👻 ACCESS DENIED';
   },
-  followers(parent, args, context, info) {
+  async followers(parent, args, context, info) {
     if (parent.followers.length === 0) {
       return [];
     }
 
-    return context.db
+    return await context.db
       .collection('users')
       .find({
         _id: {
@@ -18,12 +18,14 @@ module.exports = {
       })
       .toArray();
   },
-  notifications(parent, args, context, info) {
+  async notifications(parent, args, context, info) {
     if (parent.notifications.length === 0) {
       return [];
     }
 
-    return context.db
+    console.log();
+
+    return await context.db
       .collection('notifications')
       .find({
         _id: {

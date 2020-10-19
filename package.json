@@ -13,9 +13,11 @@
     "apollo-server": "^2.18.2",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.23.0",
+    "crypto": "^1.0.1",
     "env-cmd": "^10.1.0",
     "graphql": "^15.3.0",
     "jsonwebtoken": "^8.5.1",
-    "mongodb": "^3.6.2"
+    "mongodb": "^3.6.2",
+    "nodemailer": "^6.4.14"
   }
 }

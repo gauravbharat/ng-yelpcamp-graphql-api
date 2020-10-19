@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const bcryptjs = require('bcryptjs');
+const crypto = require('crypto');
 const mongodb = require('mongodb');
 
 exports.generateToken = (userId) => {
@@ -40,4 +41,10 @@ exports.hashPassword = (password) => {
 
 exports.matchPassword = (sendPassword, storedPassword) => {
   return bcryptjs.compare(sendPassword, storedPassword);
+};
+
+exports.getResetPasswordToken = async () => {
+  const buf = await crypto.randomBytes(20);
+  const token = buf.toString('hex');
+  return token;
 };
