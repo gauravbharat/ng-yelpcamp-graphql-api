@@ -23,8 +23,6 @@ module.exports = {
       return [];
     }
 
-    console.log();
-
     return await context.db
       .collection('notifications')
       .find({
